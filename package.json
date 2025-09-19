@@ -1,0 +1,55 @@
+{
+  "name": "querygrid-app",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "main": "electron/main.js",
+  "scripts": {
+    "dev": "cross-env NODE_ENV=development concurrently \"vite\" \"node electron/dev-runner.js\"",
+    "build": "vite build",
+    "start": "cross-env NODE_ENV=production electron .",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "format": "prettier --write ./src",
+    "dist": "npm run build && electron-builder"
+  },
+  "dependencies": {
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.35.0",
+    "@types/react": "^19.1.13",
+    "@types/react-dom": "^19.1.9",
+    "@vitejs/plugin-react": "^5.0.2",
+    "concurrently": "^9.2.1",
+    "cross-env": "^10.0.0",
+    "electron": "^38.1.2",
+    "electron-builder": "^26.0.12",
+    "eslint": "^9.35.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.20",
+    "globals": "^16.4.0",
+    "react-router-dom": "^7.9.1",
+    "vite": "^7.1.6"
+  },
+  "build": {
+    "appId": "com.application.querygrid",
+    "productName": "Querygrid Config",
+    "directories": {
+      "output": "release-builds"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*"
+    ],
+    "mac": {
+      "icon": "./buildResources/qg_logo.icns",
+      "target": "dmg"
+    },
+    "win": {
+      "icon": "./buildResources/qg_logo.ico",
+      "target": "nsis"
+    }
+  }
+}
