@@ -1,5 +1,5 @@
 {
-  "name": "querygrid-app",
+  "name": "querygrid-config",
   "private": true,
   "version": "1.0.0",
   "type": "module",
@@ -14,8 +14,11 @@
     "dist": "npm run build && electron-builder"
   },
   "dependencies": {
+    "@reduxjs/toolkit": "^2.9.0",
     "react": "^19.1.1",
-    "react-dom": "^19.1.1"
+    "react-dom": "^19.1.1",
+    "react-redux": "^9.2.0",
+    "remixicon": "^4.6.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.35.0",
