@@ -1,0 +1,32 @@
+:root{
+    /* Colors */
+    --primary-color: #3e57da;
+    --text-color: #0d0f2c;
+    --text-dark: #0f172a;
+    --text-light: #475569;
+    --extra-light: #f2f2f2;
+    --light: #f6f6f9;
+    --white: #ffffff;
+    --grey: #eee;
+    --darkGrey: #AAAAAA;
+    --dangerColor: #e50914;
+
+    /* Screen Size */
+    --maxWidth: 1200px;
+
+    /* Font Size  Big Screen*/
+    --biggest-font-size: 1.75rem;
+    --h2-font-size: 1.25rem;
+    --normal-font-size: 0.938rem;
+    --small-font-size : 0.813rem;
+    --tiny-font-size: 0.625rem;
+
+    /* Font Size  Responsive Screen*/
+    --sm-biggest-font-size: 2.125rem;
+    --sm-h2-font-size: 1.5rem;
+    --sm-normal-font-size: 1rem;
+    --sm-small-font-size : 0.875rem;
+    --sm-smaller-font-size: 0.813rem;
+    --sm-tiny-font-size: 0.688rem;
+}
+
