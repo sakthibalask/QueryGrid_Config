@@ -1,5 +1,6 @@
 import { useState } from "react";
 import '../../assets/css/LoginPage.css';
+import fs from "fs";
 
 const LoginPage = ({ serverIP }) => {
     const [repo, setRepo] = useState('');
@@ -10,6 +11,24 @@ const LoginPage = ({ serverIP }) => {
     const togglePasswordVisibility = () => {
         setShowPassword((prev) => !prev);
     };
+
+    const resetConfig = async () => {
+        try {
+            const result = await window.electronAPI.resetServer();
+            if (result.success) {
+                alert("Server config reset successfully!");
+                setRepo('');
+                setUsername('');
+                setPassword('');
+                window.location.reload();
+            } else {
+                alert("Failed to reset server: " + result.error);
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
 
     return (
         <>
@@ -54,6 +73,12 @@ const LoginPage = ({ serverIP }) => {
                             <div className="login-form-link login-form-forgot">
                                 <span className="login-forgot">
                                     Forgot Password <a href="#" className="login-forgot-pass">[Click Here]</a>
+                                </span>
+                            </div>
+
+                            <div className="login-form-link login-form-forgot">
+                                <span className="login-forgot">
+                                    Reset Server <a className="login-forgot-pass" onClick={()=>resetConfig()}>[Click Here]</a>
                                 </span>
                             </div>
 
