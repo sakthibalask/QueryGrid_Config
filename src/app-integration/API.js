@@ -12,12 +12,6 @@ function createAPI(serverIp) {
         },
     });
 
-    // api.interceptors.request.use(
-    //     (config) => {
-    //         const token =
-    //     }
-    // )
-
     return api;
 }
 
@@ -26,7 +20,7 @@ export function userAuthenticationService(serverIp) {
 
     return {
         test: () => api.get("/auth/test-connection"),
-        login: (data) => api.create("/auth/authenticateUser", data)
+        login: (data) => api.post("/auth/authenticateUser", data)
     }
 }
 

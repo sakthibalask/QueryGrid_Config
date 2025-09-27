@@ -1,14 +1,11 @@
-// electron/preload.js  (CommonJS)
-const { contextBridge, ipcRenderer } = require('electron');
+const { contextBridge, ipcRenderer } = require("electron");
 
-contextBridge.exposeInMainWorld('electronAPI', {
-    // send-only
-    saveIP: (ip) => ipcRenderer.send('save-ip', { serverIp: ip }),
-    saveAuth: (payload) => ipcRenderer.send('save-auth', payload),
-    logout: (username) => ipcRenderer.send('logout', { username }),
-
-    // request/response
-    getConfig: () => ipcRenderer.invoke('get-config'),
-
+contextBridge.exposeInMainWorld("electronAPI", {
+    saveIP: (ip) => ipcRenderer.send("save-ip", { serverIp: ip }),
+    saveAuth: (payload) => ipcRenderer.send("save-auth", { payload }),
+    saveUser: (username) => ipcRenderer.send("save-user", { username }),
+    getAuth: (username) => ipcRenderer.invoke("get-auth", { username }),
+    logout: (username) => ipcRenderer.send("logout", { username }),
+    getConfig: () => ipcRenderer.invoke("get-config"),
     resetServer: () => ipcRenderer.invoke("reset-server")
 });

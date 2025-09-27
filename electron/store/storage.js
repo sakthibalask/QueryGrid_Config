@@ -1,13 +1,11 @@
-// src/store/storage.js (main process only)
-import keytar from 'keytar';
-import { app } from 'electron';
-import fs from 'fs';
-import path from 'path';
+import keytar from "keytar";
+import { app } from "electron";
+import fs from "fs";
+import path from "path";
 
 const SERVICE_NAME = "QueryGrid.io";
 const CONFIG_FILE = path.join(app.getPath("userData"), "ipconfig.json");
 
-/* ---------------- Credentials (secure storage via keytar) ---------------- */
 export async function saveCredentials(username, token) {
     try {
         return await keytar.setPassword(SERVICE_NAME, username, token);
@@ -33,10 +31,9 @@ export async function deleteCredentials(username) {
     }
 }
 
-/* ---------------- Config (plain JSON, non-sensitive) ---------------- */
 export function saveConfig(config) {
     try {
-        fs.writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2), { encoding: 'utf8' });
+        fs.writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2), { encoding: "utf8" });
     } catch (err) {
         console.error("Failed to save config:", err);
     }
@@ -45,18 +42,17 @@ export function saveConfig(config) {
 export function loadConfig() {
     try {
         if (!fs.existsSync(CONFIG_FILE)) return {};
-        return JSON.parse(fs.readFileSync(CONFIG_FILE, { encoding: 'utf8' }));
+        return JSON.parse(fs.readFileSync(CONFIG_FILE, { encoding: "utf8" }));
     } catch (err) {
         console.error("Failed to load config:", err);
         return {};
     }
 }
 
-/* ---------------- Reset config (delete server IP / all config) ---------------- */
 export function resetConfig() {
     try {
         if (fs.existsSync(CONFIG_FILE)) {
-            fs.unlinkSync(CONFIG_FILE); // delete the config file completely
+            fs.unlinkSync(CONFIG_FILE);
         }
     } catch (err) {
         console.error("Failed to reset config:", err);
