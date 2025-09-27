@@ -50,7 +50,12 @@ const LoginPage = ({ serverIP }) => {
                 // sessionStorage.setItem("username", username);
                 if (window?.electronAPI?.saveUser) window.electronAPI.saveUser(username);
                 alert(response.data.message);
-                nav("/config");
+                if(response.data.token!=="No Token"){
+                    nav("/config");
+                }else{
+                    e.preventDefault();
+                }
+
             }
         } catch (err) {
             console.error("Login error:", err.response?.data || err.message);
