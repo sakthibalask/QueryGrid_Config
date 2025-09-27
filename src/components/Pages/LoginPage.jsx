@@ -50,7 +50,7 @@ const LoginPage = ({ serverIP }) => {
                 // sessionStorage.setItem("username", username);
                 if (window?.electronAPI?.saveUser) window.electronAPI.saveUser(username);
                 alert(response.data.message);
-                if(response.data.token!=="No Token"){
+                if(response.data.token !=="No Token"){
                     nav("/config");
                 }else{
                     e.preventDefault();
