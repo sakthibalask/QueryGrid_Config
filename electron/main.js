@@ -63,7 +63,7 @@ async function createWindow() {
             nodeIntegration: false,
             contextIsolation: true,
         },
-        resizable: false,
+        resizable: true,
         autoHideMenuBar: true,
     });
     mainWindow.setMenuBarVisibility(false);
