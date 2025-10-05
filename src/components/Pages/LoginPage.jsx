@@ -1,182 +1,149 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from "react";
 import { userAuthenticationService } from "../../app-integration/API.js";
 import '../../assets/css/LoginPage.css';
 import NotificationAlert from "../UI/NotificationAlert.jsx";
 
-const LoginPage = () => {
+const LoginPage = ({ onLogin }) => {
     const [repo, setRepo] = useState('');
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
-    const nav = useNavigate();
     const [notification, setNotification] = useState({ type: "", message: "", timeout: 3000 });
+    const [loading, setLoading] = useState(false); // optional: prevent double clicks
 
-    async function isValidToken(token) {
-        const authService = await userAuthenticationService();
-        const res = await authService.tokenValidation(token);
-        return res.data;
-    }
-
-    useEffect(() => {
-        (async () => {
-            try {
-                if (window?.electronAPI?.getConfig) {
-                    const cfg = await window.electronAPI.getConfig();
-                    const savedUser = cfg?.username;
-                    if (savedUser && window?.electronAPI?.getAuth) {
-                        const token = await window.electronAPI.getAuth(savedUser);
-                        if (token && await isValidToken(token)) {
-                            setNotification({ type: "info", message: "Revoking previous session....", timeout: 2000 })
-                            setTimeout(()=>{
-                                nav("/config");
-                            }, 2200);
-                        }else{
-                            setNotification({ type: "warning", message: "Session expired... Login again", timeout: 2000 });
-                        }
-                    }
-                }
-            } catch (err) {
-                console.error("Auto-login failed:", err);
-            }
-        })();
-    }, [nav]);
-
-
-    const togglePasswordVisibility = () => {
-        setShowPassword(prev => !prev);
-    };
+    const togglePasswordVisibility = () => setShowPassword(p => !p);
 
     const handleLogin = async (e) => {
         e.preventDefault();
         if (!repo || !username || !password) {
-            alert("Enter all details...");
+            setNotification({ type: "warning", message: "Enter all details...", timeout: 2000 });
             return;
         }
 
-        const authService = await userAuthenticationService();
+        setLoading(true);
+
         try {
+            const authService = await userAuthenticationService();
             const response = await authService.login({ repositoryName: repo, loginName: username, password });
+            const token = response?.data?.token;
+            const message = response?.data?.message || "Login response";
 
-            if (window?.electronAPI?.saveAuth) {
-                // alert(response.data.message);
-                if(response.data.token !=="No Token"){
-                    await window.electronAPI.saveAuth({ username, token: response.data.token });
-                    sessionStorage.setItem("username", username);
-                    if (window?.electronAPI?.saveUser) window.electronAPI.saveUser(username);
-                    setNotification({ type: "success", message: response.data.message, timeout: 3000 });
-                    setTimeout(() => {
-                        nav("/config");
-                    }, 3100)
-
-                }else{
-                    setNotification({ type: "error", message: response.data.message, timeout: 2000 });
-                    e.preventDefault();
+            if (token && token !== "No Token") {
+                // Save credentials via Electron
+                if (window?.electronAPI?.saveAuth) {
+                    await window.electronAPI.saveAuth({ username, token });
                 }
 
+                if (window?.electronAPI?.saveUser) {
+                    window.electronAPI.saveUser(username);
+                }
+
+                setNotification({ type: "success", message: message, timeout: 2000 });
+
+                // Notify parent to render HomePage
+                if (typeof onLogin === "function") {
+                    onLogin(username);
+                }
+
+                // Only clear inputs **after parent has rendered HomePage**
+                setRepo('');
+                setUsername('');
+                setPassword('');
+
+            } else {
+                setNotification({ type: "error", message: message || "Login failed", timeout: 3000 });
+                setRepo('');
+                setUsername('');
+                setPassword('');
             }
         } catch (err) {
             console.error("Login error:", err.response?.data || err.message);
-        } finally {
+            setNotification({ type: "error", message: err.response?.data || err.message || "Login failed", timeout: 3000 });
             setRepo('');
             setUsername('');
             setPassword('');
+        } finally {
+            setLoading(false);
         }
     };
 
     const resetConfig = async () => {
         try {
             const result = await window.electronAPI.resetServer();
-            if (result.success) {
+            if (result?.success) {
                 setNotification({ type: "success", message: "Server config reset successfully!", timeout: 2000 });
-                setRepo('');
-                setUsername('');
-                setPassword('');
-                setTimeout(() => {
-                    window.location.reload();
-                }, 2100);
-
+                setTimeout(() => window.location.reload(), 900);
             } else {
-                alert("Failed to reset server: " + result.error);
+                setNotification({ type: "error", message: "Failed to reset server", timeout: 3000 });
             }
         } catch (err) {
             console.error("Reset server error:", err);
+            setNotification({ type: "error", message: "Reset failed", timeout: 3000 });
         }
     };
 
     return (
         <>
-        <section className="login-container">
-            <div className="login-form">
-                <div className="login-form-content">
-                    <header className="login-header">Login</header>
-                    <form className="login-form">
-                        <div className="login-field login-input-filed">
-                            <input
-                                type="text"
-                                className="login-input login-repo"
-                                placeholder="Repository"
-                                value={repo}
-                                onChange={(e) => setRepo(e.target.value)}
-                            />
-                        </div>
-                        <div className="login-field login-input-filed">
-                            <input
-                                type="text"
-                                className="login-input login-username"
-                                placeholder="Username"
-                                value={username}
-                                onChange={(e) => setUsername(e.target.value)}
-                            />
-                        </div>
-                        <div className="login-field login-input-filed" style={{ position: "relative" }}>
-                            <input
-                                type={showPassword ? "text" : "password"}
-                                className="login-input login-password"
-                                placeholder="Password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                            />
-                            <i
-                                className={`form-icon ${showPassword ? "ri-eye-line" : "ri-eye-off-line"}`}
-                                onClick={togglePasswordVisibility}
-                                style={{
-                                    cursor: "pointer",
-                                    position: "absolute",
-                                    right: "10px",
-                                    top: "50%",
-                                    transform: "translateY(-50%)"
-                                }}
-                            ></i>
-                        </div>
+            <section className="login-container">
+                <div className="login-form">
+                    <div className="login-form-content">
+                        <header className="login-header">Login</header>
+                        <form className="login-form" onSubmit={handleLogin}>
+                            <div className="login-field login-input-filed">
+                                <input
+                                    type="text"
+                                    className="login-input login-repo"
+                                    placeholder="Repository"
+                                    value={repo}
+                                    onChange={(e) => setRepo(e.target.value)}
+                                />
+                            </div>
 
-                        <div className="login-form-link login-form-forgot">
-                            <span className="login-forgot">
-                                Forgot Password <a href="#" className="login-forgot-pass">[Click Here]</a>
-                            </span>
-                        </div>
+                            <div className="login-field login-input-filed">
+                                <input
+                                    type="text"
+                                    className="login-input login-username"
+                                    placeholder="Username"
+                                    value={username}
+                                    onChange={(e) => setUsername(e.target.value)}
+                                />
+                            </div>
 
-                        <div className="login-form-link login-form-forgot">
-                            <span className="login-forgot">
-                                Reset Server <a className="login-forgot-pass" onClick={resetConfig}>[Click Here]</a>
-                            </span>
-                        </div>
+                            <div className="login-field login-input-filed" style={{ position: "relative" }}>
+                                <input
+                                    type={showPassword ? "text" : "password"}
+                                    className="login-input login-password"
+                                    placeholder="Password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                />
+                                <i
+                                    className={`form-icon ${showPassword ? "ri-eye-line" : "ri-eye-off-line"}`}
+                                    onClick={togglePasswordVisibility}
+                                    style={{ cursor: "pointer", position: "absolute", right: "10px", top: "50%", transform: "translateY(-50%)" }}
+                                ></i>
+                            </div>
 
-                        <div className="login-field login-button-field">
-                            <button type="button" className="login-btn" onClick={handleLogin}>
-                                Login
-                            </button>
-                        </div>
-                    </form>
+                            <div className="login-form-link login-form-forgot">
+                                <span className="login-forgot">Forgot Password <a href="#" className="login-forgot-pass">[Click Here]</a></span>
+                            </div>
+
+                            <div className="login-form-link login-form-forgot">
+                                <span className="login-forgot">Reset Server <a className="login-forgot-pass" onClick={resetConfig}>[Click Here]</a></span>
+                            </div>
+
+                            <div className="login-field login-button-field">
+                                <button type="submit" className="login-btn" disabled={loading}>
+                                    {loading ? "Logging in..." : "Login"}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
-            </div>
-        </section>
+            </section>
+
             {notification.message && (
-                <NotificationAlert
-                    type={notification.type}
-                    message={notification.message}
-                    timeout={notification.timeout}
-                />
+                <NotificationAlert type={notification.type} message={notification.message} timeout={notification.timeout} />
             )}
         </>
     );

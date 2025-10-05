@@ -68,6 +68,19 @@ async function createWindow() {
     });
     mainWindow.setMenuBarVisibility(false);
     Menu.setApplicationMenu(null);
+
+    // === NEW: open DevTools in production too (for debugging) ===
+    // WARNING: remove this before shipping final builds.
+    if (!isDev) {
+        try {
+            // mainWindow.webContents.openDevTools({ mode: "detach" });
+            console.log("DevTools opened in production for debugging.");
+        } catch (err) {
+            console.error("Failed to open DevTools in production:", err);
+        }
+    }
+    // ==========================================================
+
     if (isDev) {
         mainWindow.loadURL("http://localhost:5173").catch(() => {});
         if (isDev) mainWindow.webContents.openDevTools({ mode: "detach" });
