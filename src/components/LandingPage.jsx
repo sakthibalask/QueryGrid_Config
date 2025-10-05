@@ -1,9 +1,12 @@
+// LandingPage.jsx
 import React, { useState, useEffect } from "react";
 import LoginPage from "./Pages/LoginPage.jsx";
 import { userAuthenticationService } from "../app-integration/API.js";
+import NotificationAlert from "./UI/NotificationAlert.jsx";
 
 const PostAppSetup = ({ onSetupComplete }) => {
     const [serverIP, setServerIP] = useState("");
+    const [notification, setNotification] = useState({ type: "", message: "", timeout: 3000 });
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -14,12 +17,18 @@ const PostAppSetup = ({ onSetupComplete }) => {
         }
 
         try {
-            const authService = userAuthenticationService(ip);
+            const authService = await userAuthenticationService();
             const response = await authService.test();
-            alert(response.data);
-            onSetupComplete(ip);
+
+            // Trigger toast notification
+            setNotification({ type: "success", message: response.data, timeout: 3000 });
+
+            setTimeout(() => {
+                onSetupComplete(ip);
+            }, 3100);
         } catch (error) {
             console.error("Error:", error.response?.data || error.message);
+            setNotification({ type: "error", message: error.response?.data || error.message, timeout: 3000 });
         }
     };
 
@@ -46,6 +55,15 @@ const PostAppSetup = ({ onSetupComplete }) => {
                     </form>
                 </div>
             </div>
+
+            {/* Render NotificationAlert for displaying toast */}
+            {notification.message && (
+                <NotificationAlert
+                    type={notification.type}
+                    message={notification.message}
+                    timeout={notification.timeout}
+                />
+            )}
         </section>
     );
 };
@@ -74,5 +92,9 @@ export function LandingPage() {
         setIsServerSet(true);
     };
 
-    return isServerSet ? <LoginPage serverIP={serverIP} /> : <PostAppSetup onSetupComplete={handleSetupComplete} />;
+    return isServerSet ? (
+        <LoginPage />
+    ) : (
+        <PostAppSetup onSetupComplete={handleSetupComplete} />
+    );
 }

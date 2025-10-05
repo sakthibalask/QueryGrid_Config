@@ -1,58 +1,103 @@
-import React, { useState, useMemo } from 'react';
-
-const initialConfigs = [
-    'testconfig2', 'testconfig', 'default',
-    'testconfig2', 'testconfig', 'default',
-    'testconfig2'
-];
-
-const initialGroups = ['testgrp', 'defaultgrp'];
+import React, { useState, useEffect } from "react";
+import { configService } from "../../app-integration/API.js";
+import NotificationAlert from "../UI/NotificationAlert.jsx"; // adjust path if needed
 
 const ConfigMatrix = () => {
-    // Remove duplicates from configs, then sort with "default" last
-    const configs = useMemo(() => {
-        const unique = [...new Set(initialConfigs)];
-        return unique.sort((a, b) => {
-            if (a === 'default') return 1;
-            if (b === 'default') return -1;
-            return a.localeCompare(b);
-        });
-    }, []);
-
-    // Remove duplicates from groups, then sort with "defaultgrp" last
-    const groups = useMemo(() => {
-        const unique = [...new Set(initialGroups)];
-        return unique.sort((a, b) => {
-            if (a === 'defaultgrp') return 1;
-            if (b === 'defaultgrp') return -1;
-            return a.localeCompare(b);
-        });
-    }, []);
-
-    // Saved mapping: group -> array of configs (JSON format)
-    const [savedMappings, setSavedMappings] = useState(() => {
-        const initial = {};
-        initialGroups.forEach(group => {
-            initial[group] = [];
-        });
-        return initial;
-    });
-
-    // Editable state: group -> Set of configs
-    const [groupToConfigs, setGroupToConfigs] = useState(() => {
-        const initial = {};
-        initialGroups.forEach(group => {
-            initial[group] = new Set();
-        });
-        return initial;
-    });
-
+    const [configs, setConfigs] = useState([]);
+    const [groups, setGroups] = useState([]);
+    const [savedMappings, setSavedMappings] = useState({});
+    const [groupToConfigs, setGroupToConfigs] = useState({});
     const [isDirty, setIsDirty] = useState(false);
 
-    // Compare current (Sets) with saved (Arrays)
+    const [notification, setNotification] = useState({
+        type: "",
+        message: "",
+        timeout: 3000,
+    });
+
+    const [isFetching, setIsFetching] = useState(false);
+
+    const fetchData = async () => {
+        // if already fetching, ignore consecutive calls
+        if (isFetching) return;
+
+        setIsFetching(true);
+        // show info notification while fetching
+        setNotification({ type: "info", message: "Fetching configurations...", timeout: null });
+
+        try {
+            const cfgService = await configService();
+
+            const configsRes = await cfgService.getConfigNames();
+            const groupsRes = await cfgService.getGroups();
+
+            const configsPayload = configsRes?.data || [];
+            const groupsPayload = groupsRes?.data || [];
+
+            const configList = configsPayload
+                .map((c) => c.configName)
+                .sort((a, b) => {
+                    if (a === "default") return 1;
+                    if (b === "default") return -1;
+                    return a.localeCompare(b);
+                });
+
+            const groupList = (groupsPayload || []).sort((a, b) => {
+                if (a === "defaultgrp") return 1;
+                if (b === "defaultgrp") return -1;
+                return a.localeCompare(b);
+            });
+
+            setConfigs(configList);
+            setGroups(groupList);
+
+            // Build initial mappings using the backend response that contains groupNames per config
+            const initialSaved = {};
+            const initialMapping = {};
+
+            // initialize with empty sets for every known group
+            groupList.forEach((g) => {
+                initialSaved[g] = [];
+                initialMapping[g] = new Set();
+            });
+
+            // fill mapping from configs payload
+            configsPayload.forEach((cfg) => {
+                const cfgName = cfg?.configName;
+                (cfg?.groupNames || []).forEach((g) => {
+                    if (initialMapping[g]) {
+                        initialMapping[g].add(cfgName);
+                    }
+                });
+            });
+
+            // convert sets to arrays for savedMappings
+            for (const g of groupList) {
+                initialSaved[g] = Array.from(initialMapping[g]);
+            }
+
+            setSavedMappings(initialSaved);
+            setGroupToConfigs(initialMapping);
+
+            // clear notification once data is ready
+            setNotification({ type: "", message: "", timeout: 0 });
+        } catch (err) {
+            console.error("Error loading configs/groups:", err);
+            setNotification({ type: "error", message: "Failed to fetch configurations", timeout: 4000 });
+        } finally {
+            setIsFetching(false);
+        }
+    };
+
+    useEffect(() => {
+        // fetch once on mount
+        fetchData();
+        // no polling
+    }, []);
+
     const isMappingChanged = (current, saved) => {
-        for (const group of initialGroups) {
-            const currentSet = current[group];
+        for (const group of groups) {
+            const currentSet = current[group] || new Set();
             const savedList = saved[group] || [];
             if (currentSet.size !== savedList.length) return true;
             for (const item of savedList) {
@@ -63,9 +108,9 @@ const ConfigMatrix = () => {
     };
 
     const toggleMapping = (group, config) => {
-        setGroupToConfigs(prev => {
+        setGroupToConfigs((prev) => {
             const updated = { ...prev };
-            const currentSet = new Set(updated[group]);
+            const currentSet = new Set(updated[group] || []);
             if (currentSet.has(config)) {
                 currentSet.delete(config);
             } else {
@@ -77,38 +122,111 @@ const ConfigMatrix = () => {
         });
     };
 
-    const handleSave = () => {
-        const saved = {};
-        for (const group of initialGroups) {
-            saved[group] = Array.from(groupToConfigs[group]);
+    const handleSave = async () => {
+        try {
+            setNotification({ type: "info", message: "Updating configurations...", timeout: null });
+
+            const cfgService = await configService();
+
+            // Build payload for each config
+            const updatePromises = configs.map(async (config) => {
+                // Collect groups where this config is selected
+                const groupNames = groups.filter((g) => groupToConfigs[g]?.has(config));
+
+                if (groupNames.length > 0) {
+                    const payload = {
+                        configName: config,
+                        groupNames: groupNames,
+                    };
+                    return cfgService.updateConfig(payload);
+                }
+            });
+
+            await Promise.all(updatePromises);
+
+            // After success update local saved state
+            const saved = {};
+            for (const group of groups) {
+                saved[group] = Array.from(groupToConfigs[group] || []);
+            }
+            setSavedMappings(saved);
+            setIsDirty(false);
+
+            setNotification({
+                type: "success",
+                message: "Database Configuration Updated Successfully",
+                timeout: 3000,
+            });
+        } catch (err) {
+            console.error("Error updating configs:", err);
+            setNotification({
+                type: "error",
+                message: "Failed to update configurations",
+                timeout: 4000,
+            });
         }
-        setSavedMappings(saved);
-        setIsDirty(false);
-        console.log('Saved Mappings (JSON):', JSON.stringify(saved, null, 2));
     };
+
 
     const handleCancel = () => {
         const reverted = {};
-        for (const group of initialGroups) {
+        for (const group of groups) {
             reverted[group] = new Set(savedMappings[group] || []);
         }
         setGroupToConfigs(reverted);
         setIsDirty(false);
     };
 
+    const handleRefreshClick = () => {
+        // Prevent refresh while fetching
+        if (isFetching) return;
+
+        if (isDirty) {
+            setNotification({
+                type: "warning",
+                message: "You have unsaved changes. Please Save or Cancel before refreshing.",
+                timeout: 4000,
+            });
+            return;
+        }
+
+        fetchData();
+    };
+
     return (
         <>
+            {notification.message && (
+                <NotificationAlert
+                    type={notification.type}
+                    message={notification.message}
+                    timeout={notification.timeout}
+                />
+            )}
+
             <nav className="q2-config-actions-subheader">
                 <li>
-                    <a href="#" className="q2-config-actions-new">
+                    <a className="q2-config-actions-new">
                         <i className="ri-add-large-line"></i> Create
                     </a>
                 </li>
+
                 <li>
                     <a
-                        href="#"
-                        className={`q2-config-actions-save ${!isDirty ? 'disabled' : ''}`}
-                        onClick={e => {
+                        className={`q2-config-actions-refresh ${isFetching ? "disabled" : ""}`}
+                        onClick={(e) => {
+                            e.preventDefault();
+                            handleRefreshClick();
+                        }}
+                        aria-disabled={isFetching}
+                    >
+                        <i className="ri-refresh-line"></i> Refresh
+                    </a>
+                </li>
+
+                <li>
+                    <a
+                        className={`q2-config-actions-save ${!isDirty ? "disabled" : ""}`}
+                        onClick={(e) => {
                             e.preventDefault();
                             if (isDirty) handleSave();
                         }}
@@ -118,19 +236,13 @@ const ConfigMatrix = () => {
                 </li>
                 <li>
                     <a
-                        href="#"
-                        className={`q2-config-actions-cancel ${!isDirty ? 'disabled' : ''}`}
-                        onClick={e => {
+                        className={`q2-config-actions-cancel ${!isDirty ? "disabled" : ""}`}
+                        onClick={(e) => {
                             e.preventDefault();
                             if (isDirty) handleCancel();
                         }}
                     >
                         <i className="ri-close-large-line"></i> Cancel
-                    </a>
-                </li>
-                <li>
-                    <a href="#" className="q2-config-actions-refresh">
-                        <i className="ri-refresh-line"></i> Refresh
                     </a>
                 </li>
             </nav>
@@ -139,10 +251,13 @@ const ConfigMatrix = () => {
                 <table className="permission-table">
                     <thead>
                     <tr>
-                        <th className="group-column" style={{backgroundColor: "#3e57da", color: "#ffffff"}}>
+                        <th
+                            className="group-column"
+                            style={{ backgroundColor: "#3e57da", color: "#ffffff" }}
+                        >
                             <i className="ri-database-2-line"></i> Q2-config
                         </th>
-                        {configs.map(config => (
+                        {configs.map((config) => (
                             <th key={config} className="vertical-header-cell">
                                 <div className="vertical-header">{config}</div>
                             </th>
@@ -150,10 +265,10 @@ const ConfigMatrix = () => {
                     </tr>
                     </thead>
                     <tbody>
-                    {groups.map(group => (
+                    {groups.map((group) => (
                         <tr key={group}>
                             <td className="group-column">{group}</td>
-                            {configs.map(config => (
+                            {configs.map((config) => (
                                 <td
                                     key={`${group}-${config}`}
                                     className="q2-config-box"
@@ -161,7 +276,7 @@ const ConfigMatrix = () => {
                                     data-group={group}
                                     data-config={config}
                                 >
-                                    {groupToConfigs[group].has(config) && (
+                                    {groupToConfigs[group]?.has(config) && (
                                         <i className="ri-database-2-line"></i>
                                     )}
                                 </td>
@@ -170,107 +285,6 @@ const ConfigMatrix = () => {
                     ))}
                     </tbody>
                 </table>
-
-                <style>{`
-          .matrix-container {
-            overflow-x: auto;
-            max-width: 100%;
-          }
-
-          table.permission-table {
-            width: auto;
-            border-collapse: collapse;
-            table-layout: fixed;
-          }
-
-          th,
-          td {
-            border: 1px solid #ccc;
-            padding: 10px;
-            text-align: center;
-          }
-
-          tr:nth-of-type(even) {
-            background: #CFE8FF;
-          }
-
-          th.vertical-header-cell {
-            background: #121212;
-            color: white;
-            font-weight: bold;
-            min-width: 40px;
-            padding: 0;
-            cursor: pointer;
-          }
-
-          .vertical-header {
-            writing-mode: vertical-rl;
-            transform: rotate(180deg);
-            white-space: nowrap;
-            font-size: 14px;
-            line-height: 1.1;
-            height: 150px;
-            display: inline-block;
-            padding: 2px;
-          }
-
-          td {
-            min-width: 30px;
-            height: 30px;
-            cursor: pointer;
-          }
-
-          .group-column {
-            width: 120px;
-            background: #f8f8f8;
-            font-weight: bold;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            overflow: hidden;
-          }
-
-          .q2-config-box i {
-            font-size: 22px;
-            color: #1976D2;
-          }
-
-          .q2-config-actions-subheader {
-            display: flex;
-            list-style: none;
-            padding: 0;
-              margin-top: 1rem;
-            margin-bottom: 1rem;
-            gap: 1rem;
-          }
-
-          .q2-config-actions-subheader li a {
-            text-decoration: none;
-            padding: 6px 12px;
-            border-radius: 4px;
-            background-color: #eee;
-            color: #333;
-            font-weight: 500;
-          }
-
-          .q2-config-actions-subheader li a.q2-config-actions-save {
-              opacity: 1;
-              background-color: #3e57da; 
-              color: #ffffff;/* Blue */
-          }
-
-          .q2-config-actions-subheader li a.q2-config-actions-cancel{
-              opacity: 1;
-              background-color: #e50914;
-              color: #ffffff;/* Blue */
-          }
-          
-          .q2-config-actions-subheader li a.disabled {
-              background-color: #aaa; /* grey */
-              opacity: 1;             /* remove fade */
-              pointer-events: none;
-              color: #0d0f2c;
-          }
-                `}</style>
             </div>
         </>
     );

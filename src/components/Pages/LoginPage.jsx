@@ -1,14 +1,22 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { userAuthenticationService } from "../../app-integration/API.js";
 import '../../assets/css/LoginPage.css';
+import NotificationAlert from "../UI/NotificationAlert.jsx";
 
-const LoginPage = ({ serverIP }) => {
+const LoginPage = () => {
     const [repo, setRepo] = useState('');
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const nav = useNavigate();
+    const [notification, setNotification] = useState({ type: "", message: "", timeout: 3000 });
+
+    async function isValidToken(token) {
+        const authService = await userAuthenticationService();
+        const res = await authService.tokenValidation(token);
+        return res.data;
+    }
 
     useEffect(() => {
         (async () => {
@@ -18,8 +26,13 @@ const LoginPage = ({ serverIP }) => {
                     const savedUser = cfg?.username;
                     if (savedUser && window?.electronAPI?.getAuth) {
                         const token = await window.electronAPI.getAuth(savedUser);
-                        if (token) {
-                            nav("/config");
+                        if (token && await isValidToken(token)) {
+                            setNotification({ type: "info", message: "Revoking previous session....", timeout: 2000 })
+                            setTimeout(()=>{
+                                nav("/config");
+                            }, 2200);
+                        }else{
+                            setNotification({ type: "warning", message: "Session expired... Login again", timeout: 2000 });
                         }
                     }
                 }
@@ -41,18 +54,23 @@ const LoginPage = ({ serverIP }) => {
             return;
         }
 
-        const authService = userAuthenticationService(serverIP);
+        const authService = await userAuthenticationService();
         try {
             const response = await authService.login({ repositoryName: repo, loginName: username, password });
 
             if (window?.electronAPI?.saveAuth) {
-                await window.electronAPI.saveAuth({ username, token: response.data.token });
-                // sessionStorage.setItem("username", username);
-                if (window?.electronAPI?.saveUser) window.electronAPI.saveUser(username);
-                alert(response.data.message);
+                // alert(response.data.message);
                 if(response.data.token !=="No Token"){
-                    nav("/config");
+                    await window.electronAPI.saveAuth({ username, token: response.data.token });
+                    sessionStorage.setItem("username", username);
+                    if (window?.electronAPI?.saveUser) window.electronAPI.saveUser(username);
+                    setNotification({ type: "success", message: response.data.message, timeout: 3000 });
+                    setTimeout(() => {
+                        nav("/config");
+                    }, 3100)
+
                 }else{
+                    setNotification({ type: "error", message: response.data.message, timeout: 2000 });
                     e.preventDefault();
                 }
 
@@ -70,11 +88,14 @@ const LoginPage = ({ serverIP }) => {
         try {
             const result = await window.electronAPI.resetServer();
             if (result.success) {
-                alert("Server config reset successfully!");
+                setNotification({ type: "success", message: "Server config reset successfully!", timeout: 2000 });
                 setRepo('');
                 setUsername('');
                 setPassword('');
-                window.location.reload();
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2100);
+
             } else {
                 alert("Failed to reset server: " + result.error);
             }
@@ -84,6 +105,7 @@ const LoginPage = ({ serverIP }) => {
     };
 
     return (
+        <>
         <section className="login-container">
             <div className="login-form">
                 <div className="login-form-content">
@@ -149,6 +171,14 @@ const LoginPage = ({ serverIP }) => {
                 </div>
             </div>
         </section>
+            {notification.message && (
+                <NotificationAlert
+                    type={notification.type}
+                    message={notification.message}
+                    timeout={notification.timeout}
+                />
+            )}
+        </>
     );
 };
 

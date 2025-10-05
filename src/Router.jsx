@@ -1,13 +1,13 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
 import { LandingPage } from "./components/LandingPage";
-import ConfigMatrix from "./components/UI/ConfigMatrix.jsx";
+import HomePage from "./components/Pages/HomePage.jsx";
 
 export function RouteApp() {
     return (
         <Routes>
             <Route path="/" element={<LandingPage />} />
-            <Route path='/config' element={<ConfigMatrix />}/>
+            <Route path='/config' element={<HomePage />}/>
         </Routes>
     )
 }

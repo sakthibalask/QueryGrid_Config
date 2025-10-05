@@ -1,0 +1,208 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    text-decoration: none;
+}
+
+.q2-homepage-nav {
+    height: 50px;
+    background: var(--primary-color);
+    color: var(--white);
+}
+
+.q2-brand {
+    position: absolute;
+    padding-left: 0;
+    float: left;
+    line-height: 50px;
+    text-transform: capitalize;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.q2-logo {
+    color: var(--white);
+}
+
+.nav-container {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.q2-nav {
+    float: right;
+}
+
+.q2-nav .nav-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.q2-nav .nav-list .nav-item {
+    float: left;
+    position: relative;
+}
+
+.q2-nav .nav-list .nav-item .nav-item_link {
+    display: block;
+    padding: 0 20px;
+    line-height: 50px;
+    background: transparent;
+    text-decoration: none;
+    color: var(--white);
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+
+/* Dropdown menu */
+.q2-nav .nav-list .nav-item .nav-dropdown {
+    position: absolute;
+    top: 50px;
+    left: 25%;
+    background: transparent;
+    display: none; /* React toggles this */
+    z-index: 1000;
+    min-width: max-content;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.15);
+}
+
+.q2-nav .nav-list .nav-item .nav-dropdown .nav-dropdown-item {
+    width: 100%;
+}
+
+.q2-nav .nav-list .nav-item .nav-dropdown .nav-dropdown-item .nav-dropdown-item_link {
+    display: block;
+    padding: 10px 10px;
+    line-height: 20px;
+    color: var(--blackColor);
+    background: var(--light);
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+
+.q2-homepage-section {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 10px;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* Config Matrix */
+
+.matrix-container {
+    overflow-x: auto;
+    max-width: 100%;
+}
+
+table.permission-table {
+    width: auto;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+th, td {
+    border: 1px solid #ccc;
+    padding: 10px;
+    text-align: center;
+}
+
+tr:nth-of-type(even) {
+    background: #CFE8FF;
+}
+
+th.vertical-header-cell {
+    background: #121212;
+    color: white;
+    font-weight: bold;
+    min-width: 40px;
+    padding: 0;
+    cursor: pointer;
+}
+
+.vertical-header {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    white-space: nowrap;
+    font-size: 14px;
+    line-height: 1.1;
+    height: 150px;
+    display: inline-block;
+    padding: 2px;
+}
+
+td {
+    min-width: 30px;
+    height: 30px;
+    cursor: pointer;
+}
+
+.group-column {
+    width: 120px;
+    background: #f8f8f8;
+    font-weight: bold;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.q2-config-box i {
+    font-size: 22px;
+    color: #1976D2;
+}
+
+.q2-config-actions-subheader {
+    display: flex;
+    list-style: none;
+    padding: 20px;
+    margin-top: -0.5rem;
+    margin-bottom: 1rem;
+    gap: 1rem;
+    background-color: var(--light);
+}
+
+.q2-config-actions-subheader li a {
+    text-decoration: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    background-color: var(--blackColor);
+    color: var(--white);
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.q2-config-actions-subheader li a.q2-config-actions-save {
+    opacity: 1;
+    background-color: var(--primary-color);
+    color: var(--white);
+}
+
+.q2-config-actions-subheader li a.q2-config-actions-cancel {
+    opacity: 1;
+    background-color: var(--dangerColor);
+    color: var(--white);
+}
+
+.q2-config-actions-subheader li a.disabled {
+    background-color: var(--darkGrey);
+    opacity: 1;
+    pointer-events: none;
+    color: var(--white);
+}

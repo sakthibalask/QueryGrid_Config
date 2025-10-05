@@ -36,6 +36,7 @@
     "globals": "^16.4.0",
     "keytar": "^7.9.0",
     "react-router-dom": "^7.9.1",
+    "react-toastify": "^11.0.5",
     "vite": "^7.1.6"
   },
   "build": {
