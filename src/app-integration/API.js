@@ -169,6 +169,7 @@ export async function configService() {
         getConfigNames: () => api.get("/configuration/getConfigsName"),
         getGroups: () => api.get("/configuration/getGroupNames"),
         updateConfig: (data) => api.patch("/configuration/update/config", data),
+        createConfig: (data) => api.post("/configuration/createConfigs", data),
     };
 }
 

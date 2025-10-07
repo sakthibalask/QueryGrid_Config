@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { configService } from "../../app-integration/API.js";
-import NotificationAlert from "../UI/NotificationAlert.jsx"; // adjust path if needed
+import NotificationAlert from "../UI/NotificationAlert.jsx";
+import CreateConfigForm from "./CreateConfigForm.jsx"; // adjust path if needed
 
 const ConfigMatrix = () => {
     const [configs, setConfigs] = useState([]);
@@ -8,6 +9,7 @@ const ConfigMatrix = () => {
     const [savedMappings, setSavedMappings] = useState({});
     const [groupToConfigs, setGroupToConfigs] = useState({});
     const [isDirty, setIsDirty] = useState(false);
+    const [popup, setPopup] = useState(false);
 
     const [notification, setNotification] = useState({
         type: "",
@@ -193,6 +195,10 @@ const ConfigMatrix = () => {
         fetchData();
     };
 
+    const handleCreateConfig = () => {
+        setPopup(!popup);
+    }
+
     return (
         <>
             {notification.message && (
@@ -205,7 +211,7 @@ const ConfigMatrix = () => {
 
             <nav className="q2-config-actions-subheader">
                 <li>
-                    <a className="q2-config-actions-new">
+                    <a className="q2-config-actions-new" onClick={handleCreateConfig}>
                         <i className="ri-add-large-line"></i> Create
                     </a>
                 </li>
@@ -286,6 +292,22 @@ const ConfigMatrix = () => {
                     </tbody>
                 </table>
             </div>
+
+            {popup && (
+                <>
+                    {/* Dimmed background overlay */}
+                    <div
+                        className="popup-overlay"
+                        onClick={() => setPopup(false)} // optional: close if clicking outside
+                    ></div>
+
+                    {/* Popup container */}
+                    <section className="form-popup-area">
+                        <CreateConfigForm onClose={() => setPopup(false)} />
+                    </section>
+                </>
+            )}
+
         </>
     );
 };

@@ -85,7 +85,7 @@ const HomePage = ({ onLogout }) => {
                             </li>
                             <li className="nav-item"><a className="nav-item_link">Users</a></li>
                             <li className="nav-item"><a className="nav-item_link">Groups</a></li>
-                            <li className="nav-item"><a className="nav-item_link">Repos</a></li>
+                            {/*<li className="nav-item"><a className="nav-item_link">Plugins</a></li>*/}
                             <li className="nav-item"><a className="nav-item_link">Clients</a></li>
                             <li className="nav-item">
                                 <a className="nav-item_link" onClick={(e) => { e.preventDefault(); toggleDropdown("updates"); }}>Updates</a>
