@@ -126,27 +126,31 @@ const ConfigMatrix = () => {
 
     const handleSave = async () => {
         try {
-            setNotification({ type: "info", message: "Updating configurations...", timeout: null });
 
             const cfgService = await configService();
 
-            // Build payload for each config
-            const updatePromises = configs.map(async (config) => {
-                // Collect groups where this config is selected
-                const groupNames = groups.filter((g) => groupToConfigs[g]?.has(config));
+            const skippedConfigs = []; // configs not mapped to any group
+            const updatePromises = [];
 
-                if (groupNames.length > 0) {
+            configs.forEach((config) => {
+                // Collect groups where this config is selected
+                const mappedGroups = groups.filter((g) => groupToConfigs[g]?.has(config));
+
+                if (mappedGroups.length === 0) {
+                    skippedConfigs.push(config); // track configs without groups
+                } else {
                     const payload = {
                         configName: config,
-                        groupNames: groupNames,
+                        groupNames: mappedGroups,
                     };
-                    return cfgService.updateConfig(payload);
+                    updatePromises.push(cfgService.updateConfig(payload));
                 }
             });
 
+            // Save only configs that have at least one group
             await Promise.all(updatePromises);
 
-            // After success update local saved state
+            // After success, update local saved state for all configs (including skipped)
             const saved = {};
             for (const group of groups) {
                 saved[group] = Array.from(groupToConfigs[group] || []);
@@ -154,11 +158,33 @@ const ConfigMatrix = () => {
             setSavedMappings(saved);
             setIsDirty(false);
 
-            setNotification({
-                type: "success",
-                message: "Database Configuration Updated Successfully",
-                timeout: 3000,
-            });
+            // Show notification for success and skipped configs
+            if (skippedConfigs.length > 0) {
+                setNotification({
+                    type: "warning",
+                    message: `Some configs were skipped because they are not mapped to any group: ${skippedConfigs.join(", ")}`,
+                    timeout: 5000,
+                });
+
+                setTimeout(()=>{
+                    fetchData();
+                }, 5100);
+            } else {
+                setNotification({ type: "info", message: "Updating configurations...", timeout: 1200 });
+                setTimeout(()=>{
+                    setNotification({
+                        type: "success",
+                        message: "Database Configuration Updated Successfully",
+                        timeout: 3000,
+                    });
+                },2100);
+
+
+
+                setTimeout(()=>{
+                    fetchData();
+                }, 3100);
+            }
         } catch (err) {
             console.error("Error updating configs:", err);
             setNotification({
@@ -168,6 +194,7 @@ const ConfigMatrix = () => {
             });
         }
     };
+
 
 
     const handleCancel = () => {
