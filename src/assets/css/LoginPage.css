@@ -1,8 +1,9 @@
-*{
+* {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
     text-decoration: none;
+    list-style: none;
 }
 
 .login-container{
@@ -133,22 +134,6 @@
     cursor: pointer;
 }
 
-.google-icon{
-    position: absolute;
-    height: 28px;
-    width: 28px;
-    color: var(--primary-color);
-    font-size: 20px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: var(--white);
-    top: 75.5%;
-    left: 40%;
-    transform: translateY(-50%);
-}
-
 .display-hide{
     display: none;
 }
@@ -161,23 +146,5 @@
     display: block;
 }
 
-
-@media screen and (max-width: 768px){
-    .login-container{
-        width: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .login-form{
-        width: 100%;
-        margin: 1rem;
-    }
-
-    .login-popup-area{
-        display: none;
-    }
-}
 
 

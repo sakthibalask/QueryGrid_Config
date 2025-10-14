@@ -2,13 +2,18 @@ import React, { useState, useEffect, useRef } from "react";
 import '../../assets/css/HomePage.css';
 import ConfigMatrix from "../UI/ConfigMatrix.jsx";
 import NotificationAlert from "../UI/NotificationAlert.jsx";
-import { userService as userServiceAPI, userAuthenticationService } from "../../app-integration/API.js";
+import { userService as userServiceAPI, userAuthenticationService, configService as configServiceAPI } from "../../app-integration/API.js";
+import ImportConfigUI from "../UI/ImportConfigUI.jsx";
+import PreviewConfigMatrix from "../UI/PreviewConfigMatrix.jsx";
 
 const HomePage = ({ onLogout }) => {
     const [activeDropdown, setActiveDropdown] = useState(null);
     const [username, setUsername] = useState('');
     const [notification, setNotification] = useState({ type: "", message: "", timeout: 3000 });
     const navRef = useRef(null);
+    const [importPopup, setImportPopup] = useState(false);
+    const [exportPopup, setExportPopup] = useState(false);
+    const [exportedConfigs, setExportConfigs] = useState(null);
 
     async function isValidToken(token) {
         try {
@@ -57,6 +62,26 @@ const HomePage = ({ onLogout }) => {
         }
     };
 
+    const handleExportPopup = async (e) => {
+        e.preventDefault();
+        try{
+            setActiveDropdown(null);
+            const configSerice = configServiceAPI();
+            const res = (await configSerice).previewExport();
+            setExportConfigs((await res).data);
+            setExportPopup(true);
+        }catch (err) {
+            console.error(err);
+        }
+
+
+    }
+
+    const handleImportPopup = () => {
+        setActiveDropdown(null);
+        setImportPopup(!importPopup);
+    }
+
     // Close dropdown on outside click
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -78,8 +103,8 @@ const HomePage = ({ onLogout }) => {
                             <li className="nav-item">
                                 <a className="nav-item_link" onClick={(e) => { e.preventDefault(); toggleDropdown("file"); }}>File</a>
                                 <ul className="nav-dropdown" style={{ display: activeDropdown === "file" ? "block" : "none" }}>
-                                    <li className="nav-dropdown-item"><a className="nav-dropdown-item_link">Import Configuration</a></li>
-                                    <li className="nav-dropdown-item"><a className="nav-dropdown-item_link">Export Configuration</a></li>
+                                    <li className="nav-dropdown-item"><a className="nav-dropdown-item_link" onClick={handleImportPopup}>Import Configuration</a></li>
+                                    <li className="nav-dropdown-item"><a className="nav-dropdown-item_link" onClick={(e) => handleExportPopup(e)}>Export Configuration</a></li>
                                     <li className="nav-dropdown-item"><a className="nav-dropdown-item_link" onClick={handleLogout}>Logout</a></li>
                                 </ul>
                             </li>
@@ -103,6 +128,42 @@ const HomePage = ({ onLogout }) => {
                 <ConfigMatrix />
                 {notification.message && (
                     <NotificationAlert type={notification.type} message={notification.message} timeout={notification.timeout} />
+                )}
+
+
+
+
+                {(importPopup || exportPopup) && (
+                    <>
+                        <div
+                            className="popup-overlay"
+                            onClick={() => {
+                                setImportPopup(false);
+                                setExportPopup(false)
+                            }} // optional: close if clicking outside
+                        ></div>
+
+                        {importPopup && (
+                            <section className="config-form-popup-area">
+                                <ImportConfigUI
+                                    onClose={() => setImportPopup(false)}
+                                />
+                            </section>
+                        )}
+
+                        {exportPopup && (
+                            <section className="config-form-popup-area">
+                                <PreviewConfigMatrix
+                                    configs={exportedConfigs?.databaseConfigs || []}
+                                    mode="export"
+                                    onClose={() => setExportPopup(false)}
+                                />
+                            </section>
+                        )}
+
+
+
+                    </>
                 )}
             </section>
         </>

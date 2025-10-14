@@ -117,6 +117,14 @@ const CreateConfigForm = ({ onClose }) => {
         }
     };
 
+    const handleRemoveGroup = (groupToRemove) => {
+        setFormData((prev) => ({
+            ...prev,
+            groupNames: prev.groupNames.filter((g) => g !== groupToRemove),
+        }));
+    };
+
+
 
     return (
         <>
@@ -257,11 +265,22 @@ const CreateConfigForm = ({ onClose }) => {
                         </div>
 
                         <div className="group-field">
-                            <textarea
-                                className="groups-column-adder"
-                                readOnly
-                                value={formData.groupNames.join(", ")}
-                            ></textarea>
+                            <div className="group-chips-container">
+                                {formData.groupNames.length > 0 ? (
+                                    formData.groupNames.map((group, idx) => (
+                                        <span key={idx} className="group-chip">
+                                            {group}
+                                            <i
+                                                className="ri-close-line remove-icon"
+                                                onClick={() => handleRemoveGroup(group)}
+                                                title="Remove group"
+                                            ></i>
+                                        </span>
+                                    ))
+                                ) : (
+                                    <p className="no-groups-text">No groups added yet</p>
+                                )}
+                            </div>
                         </div>
                     </div>
 

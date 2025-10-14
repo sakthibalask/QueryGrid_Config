@@ -18,6 +18,7 @@ export function LandingPage() {
             const res = await authService.tokenValidation(token);
             return !!res.data;
         } catch {
+
             return false;
         }
     }

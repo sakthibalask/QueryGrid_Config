@@ -170,6 +170,21 @@ export async function configService() {
         getGroups: () => api.get("/configuration/getGroupNames"),
         updateConfig: (data) => api.patch("/configuration/update/config", data),
         createConfig: (data) => api.post("/configuration/createConfigs", data),
+
+        importConfig: (file) => {
+            const formData = new FormData();
+            formData.append("file", file);
+
+            return api.post("/configuration/import/config", formData, {
+                headers: { "Content-Type": "multipart/form-data" },
+            });
+        },
+
+        saveConfig: (data) => api.post("/configuration/save/config", data),
+
+        previewExport: () => api.get("/configuration/preview/config"),
+
+        exportConfig: (data) => api.post("/configuration/export/config", data),
     };
 }
 
