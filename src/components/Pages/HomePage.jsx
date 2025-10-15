@@ -5,9 +5,11 @@ import NotificationAlert from "../UI/NotificationAlert.jsx";
 import { userService as userServiceAPI, userAuthenticationService, configService as configServiceAPI } from "../../app-integration/API.js";
 import ImportConfigUI from "../UI/ImportConfigUI.jsx";
 import PreviewConfigMatrix from "../UI/PreviewConfigMatrix.jsx";
+import View from "../UI/View.jsx";
 
 const HomePage = ({ onLogout }) => {
     const [activeDropdown, setActiveDropdown] = useState(null);
+    const [activeMenu, setActiveMenu] = useState("home");
     const [username, setUsername] = useState('');
     const [notification, setNotification] = useState({ type: "", message: "", timeout: 3000 });
     const navRef = useRef(null);
@@ -97,7 +99,7 @@ const HomePage = ({ onLogout }) => {
         <>
             <nav className="q2-homepage-nav" ref={navRef}>
                 <div className="nav-container">
-                    <div className="q2-brand"><a className="q2-logo">QueryGrid Config</a></div>
+                    <div className="q2-brand"><a className="q2-logo" onClick={() => setActiveMenu("home")}>QueryGrid Config</a></div>
                     <div className="q2-nav">
                         <ul className="nav-list">
                             <li className="nav-item">
@@ -108,8 +110,8 @@ const HomePage = ({ onLogout }) => {
                                     <li className="nav-dropdown-item"><a className="nav-dropdown-item_link" onClick={handleLogout}>Logout</a></li>
                                 </ul>
                             </li>
-                            <li className="nav-item"><a className="nav-item_link">Users</a></li>
-                            <li className="nav-item"><a className="nav-item_link">Groups</a></li>
+                            <li className="nav-item"><a className="nav-item_link" onClick={()=> setActiveMenu("users")}>Users</a></li>
+                            <li className="nav-item"><a className="nav-item_link" onClick={() => setActiveMenu("groups")}>Groups</a></li>
                             {/*<li className="nav-item"><a className="nav-item_link">Plugins</a></li>*/}
                             <li className="nav-item"><a className="nav-item_link">Clients</a></li>
                             <li className="nav-item">
@@ -125,13 +127,12 @@ const HomePage = ({ onLogout }) => {
             </nav>
 
             <section className="q2-homepage-section">
-                <ConfigMatrix />
+                {activeMenu === "home" && <ConfigMatrix />}
+                {activeMenu === "users" && <View purpose="users" />}
+                {activeMenu === "groups" && <View purpose="groups" />}
                 {notification.message && (
                     <NotificationAlert type={notification.type} message={notification.message} timeout={notification.timeout} />
                 )}
-
-
-
 
                 {(importPopup || exportPopup) && (
                     <>

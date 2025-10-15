@@ -91,6 +91,10 @@
     padding: 10px;
 }
 
+.q2-homepage-section::-webkit-scrollbar {
+    width: 0;
+}
+
 
 
 

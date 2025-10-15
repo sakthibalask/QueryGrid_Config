@@ -8,6 +8,10 @@ body {
   text-decoration: none;
 }
 
+body::-webkit-scrollbar {
+    width: 0;
+}
+
 input {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   font-weight: 550;

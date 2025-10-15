@@ -185,6 +185,10 @@ export async function configService() {
         previewExport: () => api.get("/configuration/preview/config"),
 
         exportConfig: (data) => api.post("/configuration/export/config", data),
+
+        getUsersDetails: () => api.get("/configuration/getUsers"),
+
+        getGroupsDetails: () => api.get("/configuration/getGroups"),
     };
 }
 
