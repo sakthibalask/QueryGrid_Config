@@ -1,9 +1,9 @@
 // src/app-integration/API.js
 import axios from "axios";
 
-let cachedToken = null;      // memory cache for token
-let cachedServerIP = null;   // memory cache for serverIP
-let cachedAPI = null;        // memory cache for axios instance
+let cachedToken = null;
+let cachedServerIP = null;
+let cachedAPI = null;
 
 function setDefaultServerURL(serverIP) {
     return `http://${serverIP}:8181/app/v1`;
@@ -33,11 +33,9 @@ async function resolveTokenFromIPC() {
         const username = cfg?.username;
         if (username && window.electronAPI.getAuth) {
             const token = await window.electronAPI.getAuth(username);
-            // validate token format (must have 3 parts)
             if (token && token.split('.').length === 3) {
                 return token;
             } else {
-                // invalid token — clear it
                 cachedToken = null;
                 if (window.electronAPI.logout) await window.electronAPI.logout(username);
                 return null;
@@ -51,6 +49,16 @@ async function resolveTokenFromIPC() {
     }
 }
 
+// ✅ Auth-free axios instance (used for login and test)
+async function createAuthAPI() {
+    const serverIP = await getServerIP();
+    return axios.create({
+        baseURL: setDefaultServerURL(serverIP),
+        headers: { "Content-Type": "application/json" },
+    });
+}
+
+// ✅ Token-protected axios instance
 async function createAPI() {
     const serverIP = await getServerIP();
 
@@ -63,7 +71,7 @@ async function createAPI() {
         headers: { "Content-Type": "application/json" },
     });
 
-    // Attach token to every request
+    // Request interceptor → attach token
     api.interceptors.request.use(
         async (config) => {
             try {
@@ -72,7 +80,6 @@ async function createAPI() {
                     if (ipcToken) {
                         cachedToken = ipcToken;
                     } else {
-                        // fallback (dev): sessionStorage username
                         const username = typeof window !== "undefined" ? sessionStorage.getItem("username") : null;
                         if (username && window?.electronAPI?.getAuth) {
                             const t = await window.electronAPI.getAuth(username);
@@ -95,7 +102,7 @@ async function createAPI() {
         (error) => Promise.reject(error)
     );
 
-    // Handle 401: clear cachedToken so next request will re-resolve
+    // Response interceptor → handle 401
     api.interceptors.response.use(
         (res) => res,
         async (err) => {
@@ -111,23 +118,25 @@ async function createAPI() {
     return api;
 }
 
-// Auth service
+// ===============================
+// Auth service (login isolated)
+// ===============================
 export async function userAuthenticationService() {
-    const api = await createAPI();
+    const api = await createAPI();        // for token validation
+    const authApi = await createAuthAPI(); // bare instance for login
 
     return {
-        test: () => api.get("/auth/test-connection"),
+        test: () => authApi.get("/auth/test-connection"),
 
         login: async (data) => {
             try {
-                const res = await api.post("/auth/authenticateUser/config", data);
-
+                const res = await authApi.post("/auth/authenticateUser/config", data);
                 const token = res.data?.token;
+
                 if (token && token !== "No Token" && token.split('.').length === 3) {
                     cachedToken = token;
                 } else {
                     cachedToken = null;
-                    // clear electron stored token if invalid
                     if (window?.electronAPI?.saveAuth) {
                         await window.electronAPI.saveAuth({ username: data.loginName, token: null });
                     }
@@ -144,7 +153,9 @@ export async function userAuthenticationService() {
     };
 }
 
+// ===============================
 // User service
+// ===============================
 export async function userService() {
     const api = await createAPI();
 
@@ -161,7 +172,9 @@ export async function userService() {
     };
 }
 
+// ===============================
 // Config service
+// ===============================
 export async function configService() {
     const api = await createAPI();
 
@@ -170,25 +183,27 @@ export async function configService() {
         getGroups: () => api.get("/configuration/getGroupNames"),
         updateConfig: (data) => api.patch("/configuration/update/config", data),
         createConfig: (data) => api.post("/configuration/createConfigs", data),
-
         importConfig: (file) => {
             const formData = new FormData();
             formData.append("file", file);
-
             return api.post("/configuration/import/config", formData, {
                 headers: { "Content-Type": "multipart/form-data" },
             });
         },
-
         saveConfig: (data) => api.post("/configuration/save/config", data),
-
         previewExport: () => api.get("/configuration/preview/config"),
-
         exportConfig: (data) => api.post("/configuration/export/config", data),
-
         getUsersDetails: () => api.get("/configuration/getUsers"),
-
         getGroupsDetails: () => api.get("/configuration/getGroups"),
+        getUsernames: () => api.get("/configuration/getUsernames"),
+        createUser: (userData) => api.post("/configuration/createUser", userData),
+        updateUser: (patchData) => api.patch("/configuration/updateUser", patchData),
+        createGroup: (groupData) => api.post("/configuration/createGroup", groupData),
+        updateGroup: (groupData) => api.post("/configuration/updateGroup", groupData),
+        allocateLicense: (licenseData) => api.post("/configuration/allocateLicense", licenseData),
+        getUserDetail: (useremail) => api.get("/configuration/getUser?email=" + useremail),
+        getGroupDetail: (groupname) => api.get("/configuration/getGroup?groupName=" + groupname),
+        getUserLicense: (useremail) => api.get("/configuration/getLicense?useremail=" + useremail),
     };
 }
 

@@ -1,0 +1,286 @@
+/* ================================
+   POPUP CONTAINER
+==================================*/
+
+.preview-form-popup-area {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: auto;
+    max-width: 1200px;
+    min-width: 700px;
+    max-height: 800px;
+    background:transparent;
+    color: var(--text-dark);
+    border-radius: 20px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    transition: all 0.3s ease;
+    z-index: 9999;
+    padding: 20px 0;
+    animation: popup-fade-in 0.3s ease;
+}
+
+.preview-form-popup-area::-webkit-scrollbar {
+    width: 6px;
+}
+.preview-form-popup-area::-webkit-scrollbar-thumb {
+    background: var(--light-primary-color);
+    border-radius: 4px;
+}
+
+/* ================================
+   CONTAINER + TITLE SECTION
+==================================*/
+
+.create-view-container {
+    max-width: 700px;
+    width: 100%;
+    background: var(--white);
+    border-radius: 0.75rem;
+    overflow: hidden;
+    margin: 20px auto;
+    font-family: "Poppins", sans-serif;
+}
+
+.create-view-title {
+    padding: 25px;
+    background: var(--white);
+    border-bottom: 1px solid var(--grey);
+}
+
+.create-view-title p {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--text-dark);
+    position: relative;
+}
+
+.create-view-title p::before {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 40px;
+    height: 3px;
+    background: var(--primary-color);
+    border-radius: 2px;
+}
+
+/* ================================
+   INPUT GRID
+==================================*/
+
+.create-view-user_details {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 25px;
+}
+
+.create-view-input_box {
+    width: calc(50% - 10px);
+    margin-bottom: 12px;
+    position: relative; /* For dropdown positioning */
+}
+
+.create-view-input_box label {
+    font-weight: 500;
+    margin-bottom: 5px;
+    color: var(--text-color);
+    display: block;
+}
+
+.create-view-input_box label::after {
+    content: " *";
+    color: var(--dangerColor);
+}
+
+.create-view-input_box input {
+    width: 100%;
+    height: 45px;
+    border: 1px solid var(--blackColor);
+    border-radius: 6px;
+    padding: 0 12px;
+    font-size: 15px;
+    background-color: var(--white);
+    font-family: "Poppins", sans-serif;
+    color: var(--text-dark);
+    transition: all 0.2s ease;
+}
+
+.create-view-input_box input:focus {
+    border-color: var(--primary-color);
+    background-color: var(--white);
+    box-shadow: 0 0 0 2px var(--light-primary-color);
+}
+
+/* ================================
+   USER SEARCH (GROUP CREATION)
+==================================*/
+
+.create-view-user_selector {
+    position: relative;
+}
+
+.create-view-chipbox {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px;
+    border-radius: 8px;
+    background-color: var(--white);
+    border: 1px solid var(--blackColor);
+    min-height: 55px;
+    transition: all 0.2s ease;
+}
+
+.create-view-chipbox:focus-within {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px var(--light-primary-color);
+    background-color: var(--white);
+}
+
+.create-view-chipbox input {
+    flex: 1;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 15px;
+    color: var(--text-dark);
+}
+
+.create-view-user_search_results {
+    position: absolute;
+    top: calc(100% + 5px);
+    left: 0;
+    width: 100%;
+    background: var(--white);
+    border-radius: 6px;
+    z-index: 50;
+    max-height: 220px;
+    overflow-y: auto;
+}
+
+.create-view-user_item {
+    padding: 10px 12px;
+    cursor: pointer;
+    font-size: 14.5px;
+    color: var(--text-dark);
+    transition: background 0.2s ease;
+}
+
+.create-view-user_item:hover {
+    background: var(--light-primary-color);
+}
+
+/* ================================
+   SELECTED USERS / CHIP AREA
+==================================*/
+
+.create-view-chip_area {
+    position: relative;
+    right: 110%;
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 8px;
+    min-height: 50px;
+    min-width: 650px;
+    width: auto;
+    padding: 8px;
+    margin-top: 20px;
+    background: var(--extra-light);
+    border: 1px solid var(--grey);
+    border-radius: 6px;
+    overflow-y: auto;
+    max-height: 120px;
+}
+
+.create-view-chip {
+    display: flex;
+    align-items: center;
+    background: var(--primary-color);
+    color: #fff;
+    border-radius: 16px;
+    padding: 6px 10px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: background 0.2s ease;
+}
+
+.create-view-chip button {
+    background: none;
+    border: none;
+    margin-left: 6px;
+    cursor: pointer;
+    color: #fff;
+    font-size: 0.9rem;
+}
+
+.create-view-chip button:hover {
+    color: var(--dangerColor);
+}
+
+.create-view-chip_area .placeholder-text {
+    color: #999;
+    font-size: 0.9rem;
+}
+
+/* ================================
+   SUBMIT BUTTON
+==================================*/
+
+.create-view-reg_btn {
+    padding: 25px;
+}
+
+.create-view-reg_btn input {
+    height: 45px;
+    width: 100%;
+    border: none;
+    font-size: 17px;
+    font-weight: 500;
+    cursor: pointer;
+    background: var(--primary-color);
+    color: var(--white);
+    border-radius: 6px;
+    transition: all 0.25s ease;
+}
+
+.create-view-reg_btn input:hover {
+    background: #2f46c3;
+    transform: translateY(-1px);
+}
+
+/* ================================
+   ANIMATION
+==================================*/
+
+@keyframes popup-fade-in {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -48%);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%);
+    }
+}
+
+/* ================================
+   RESPONSIVENESS
+==================================*/
+
+@media screen and (max-width: 768px) {
+    .create-view-user_details {
+        flex-direction: column;
+    }
+    .create-view-input_box {
+        width: 100%;
+    }
+    .create-view-container {
+        margin: 10px;
+    }
+}

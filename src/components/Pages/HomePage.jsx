@@ -99,7 +99,12 @@ const HomePage = ({ onLogout }) => {
         <>
             <nav className="q2-homepage-nav" ref={navRef}>
                 <div className="nav-container">
-                    <div className="q2-brand"><a className="q2-logo" onClick={() => setActiveMenu("home")}>QueryGrid Config</a></div>
+                    <div className="q2-brand"><a className="q2-logo" onClick={() =>
+                    {
+                        setActiveDropdown(null);
+                        setActiveMenu("home")
+                    }
+                    }>QueryGrid Config</a></div>
                     <div className="q2-nav">
                         <ul className="nav-list">
                             <li className="nav-item">
@@ -110,8 +115,16 @@ const HomePage = ({ onLogout }) => {
                                     <li className="nav-dropdown-item"><a className="nav-dropdown-item_link" onClick={handleLogout}>Logout</a></li>
                                 </ul>
                             </li>
-                            <li className="nav-item"><a className="nav-item_link" onClick={()=> setActiveMenu("users")}>Users</a></li>
-                            <li className="nav-item"><a className="nav-item_link" onClick={() => setActiveMenu("groups")}>Groups</a></li>
+                            <li className="nav-item"><a className="nav-item_link" onClick={()=>
+                            {
+                                setActiveDropdown(null);
+                                setActiveMenu("users")
+                            }}>Users</a></li>
+                            <li className="nav-item"><a className="nav-item_link" onClick={() =>
+                            {
+                                setActiveDropdown(null);
+                                setActiveMenu("groups")
+                            }}>Groups</a></li>
                             {/*<li className="nav-item"><a className="nav-item_link">Plugins</a></li>*/}
                             <li className="nav-item"><a className="nav-item_link">Clients</a></li>
                             <li className="nav-item">

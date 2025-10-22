@@ -1,0 +1,105 @@
+/* ===== Container ===== */
+.license-details-info-container {
+    width: 100%;
+    max-width: 700px;
+    margin: 60px auto;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    background-color: var(--white);
+    border-radius: 10px;
+    padding: 30px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+/* ===== Label ===== */
+.license-details-info-label {
+    color: var(--text-light);
+    font-size: var(--h2-font-size);
+    font-weight: bold;
+    letter-spacing: 0.05em;
+    margin-bottom: 40px;
+}
+
+/* ===== License Display ===== */
+.license-details-info-key-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--extra-light);
+    border: 2px solid var(--grey);
+    border-radius: 8px;
+    padding: 15px 20px;
+    transition: all 0.2s ease;
+    margin-top: 30px;
+}
+
+.license-details-info-key-box:hover {
+    border-color: var(--primary-color);
+}
+
+.license-details-info-license-text {
+    font-size: 1.2rem;
+    letter-spacing: 0.05em;
+    color: var(--text-dark);
+    font-weight: bold;
+    word-break: break-all;
+}
+
+/* ===== Toggle Button ===== */
+.license-details-info-toggle-btn {
+    background: none;
+    border: none;
+    color: var(--primary-color);
+    font-weight: bold;
+    cursor: pointer;
+    font-size: var(--normal-font-size);
+    transition: color 0.2s ease;
+}
+
+.license-details-info-toggle-btn:hover {
+    color: var(--text-dark);
+}
+
+/* ===== Action Buttons ===== */
+.license-details-info-actions {
+    display: flex;
+    gap: 15px;
+    margin-top: 30px;
+}
+
+.license-details-info-revoke-btn,
+.license-details-info-delete-btn {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    color: var(--white);
+    font-size: var(--normal-font-size);
+}
+
+/* Copy Button (default style) */
+.license-details-info-revoke-btn {
+    background-color: #ffb400;
+}
+
+.license-details-info-revoke-btn:hover {
+    background-color: #e09c00;
+}
+
+/* ✅ Copied State */
+.license-details-info-revoke-btn.copied {
+    background-color: #00b66d;
+    color: #ffffff;
+}
+
+/* Delete Button */
+.license-details-info-delete-btn {
+    background-color: var(--dangerColor);
+}
+
+.license-details-info-delete-btn:hover {
+    background-color: #c10810;
+}

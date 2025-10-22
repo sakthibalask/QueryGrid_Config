@@ -36,7 +36,7 @@ const PreviewConfigMatrix = ({ configs, mode = "import", onClose }) => {
 
             if (mode === "import") {
                 const res = await service.saveConfig({ databaseConfigs: configs });
-                alert(res.data);
+                console.log(res.data);
             } else if (mode === "export") {
                 const xmlContent = generateXML(configs);
 
