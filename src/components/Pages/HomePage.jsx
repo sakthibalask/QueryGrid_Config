@@ -160,7 +160,10 @@ const HomePage = ({ onLogout }) => {
                         {importPopup && (
                             <section className="config-form-popup-area">
                                 <ImportConfigUI
-                                    onClose={() => setImportPopup(false)}
+                                    onClose={() =>
+                                    {
+                                        setImportPopup(false);
+                                    }}
                                 />
                             </section>
                         )}

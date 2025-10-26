@@ -464,6 +464,238 @@ body.popup-open {
     width: 0;
 }
 
+.preview-import-options{
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    gap: 5px;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.config-view {
+    max-width: 700px;
+    width: 100%;
+    background: var(--white);
+    border-radius: 0.75rem;
+    overflow: hidden;
+    margin: auto;
+}
+
+.config-view-header {
+    padding: 15px;
+    background: var(--white);
+    border-bottom: 1px solid var(--grey);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.config-view-header p {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--text-dark);
+    position: relative;
+}
+
+.config-view-header p::before {
+    content: "";
+    position: absolute;
+    bottom: -10px;
+    left: 0;
+    width: 40px;
+    height: 3px;
+    background: var(--primary-color);
+    border-radius: 2px;
+}
+
+.config-view-input-area {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 25px;
+}
+
+.config-view-input {
+    width: 100%;
+    height: 45px;
+    border: 1px solid var(--blackColor);
+    border-radius: 6px;
+    padding: 0 12px;
+    font-size: 15px;
+    background-color: var(--white);
+    color: var(--text-dark);
+}
+
+.config-view-input-update {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.config-view-input-update > input {
+    width: 75%;
+    height: 45px;
+    border: 1px solid var(--blackColor);
+    border-radius: 6px;
+    padding: 0 12px;
+    font-size: 15px;
+    background-color: var(--white);
+    color: var(--text-dark);
+    outline: 1px solid var(--light-primary-color);
+}
+
+.config-view-button {
+    padding: 15px;
+    border: none;
+    background-color: var(--primary-color);
+    color: var(--white);
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.config-view-button.opt-delete {
+    background-color: var(--dangerColor);
+}
+
+.config-view-button.opt-grant {
+    background-color: #00b66d;
+}
+.config-view-button.opt-grant.disabled {
+    background-color: grey;
+    cursor: not-allowed;
+}
+
+
+/* ✅ Toggle Section */
+.config-view-status-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: transparent;
+    padding: 8px 12px;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 18px;
+    color: #111827;
+    width: fit-content;
+    gap: 10px;
+    margin: 0 20px;
+}
+
+.config-view-switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 28px;
+}
+
+.config-view-input-toggle {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.config-view-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    border-radius: 34px;
+    transition: 0.3s;
+}
+
+.config-view-slider::before {
+    position: absolute;
+    content: "";
+    height: 22px;
+    width: 22px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    border-radius: 50%;
+    transition: 0.3s;
+}
+
+/* ✅ Checked state */
+.config-view-input-toggle:checked + .config-view-slider {
+    background-color: #059669;
+}
+
+.config-view-input-toggle:checked + .config-view-slider::before {
+    transform: translateX(22px);
+}
+
+/* ✅ Table Section */
+.table-fieldset {
+    margin: 2rem;
+    padding: 10px 10px;
+    border-radius: 1rem;
+    background-color: var(--white);
+    border: none;
+    color: var(--primary-color);
+    transition: all 0.3s ease;
+}
+
+.table-div {
+    display: inline-block;
+}
+
+.table-input {
+    display: none;
+}
+
+.table-label {
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    padding: 0.5rem 1rem 0.5rem 0.5rem;
+    margin: 0 1rem 1rem 0;
+    border-radius: 100rem;
+    color: var(--blackColor);
+    box-shadow: 0 0 0 2px var(--darkGrey);
+    transition: all 0.4s ease-in-out;
+}
+
+.table-label:before {
+    content: "";
+    background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgZmlsbD0iI2ZmZmZmZiIgdmlld0JveD0iMCAwIDI1NiAyNTYiPjxwYXRoIGQ9Ik0yMjkuNjYsNzcuNjZsLTEyOCwxMjhhOCw4LDAsMCwxLTExLjMyLDBsLTU2LTU2YTgsOCwwLDAsMSwxMS4zMi0xMS4zMkw5NiwxODguNjksMjE4LjM0LDY2LjM0YTgsOCwwLDAsMSwxMS4zMiwxMS4zMloiPjwvcGF0aD48L3N2Zz4=");
+    background-position: center center;
+    background-repeat: no-repeat;
+    margin-right: 0.5rem;
+    border-radius: 100rem;
+    width: 1.5rem;
+    height: 1.5rem;
+    transition: all 0.4s ease-in-out;
+}
+
+.table-label:hover {
+    cursor: pointer;
+    box-shadow: 0 0 0 2px var(--primary-color);
+}
+
+.table-label:hover:before {
+    background-color: var(--light-primary-color);
+}
+
+.table-input:checked + .table-label {
+    box-shadow: 0 0 0 2px var(--primary-color);
+}
+
+.table-input:checked + .table-label:before {
+    background-color: var(--primary-color);
+}
+
+.table-buttons-group{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 
 
 

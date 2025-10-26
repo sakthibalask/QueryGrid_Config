@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { configService } from "../../app-integration/API.js";
+import NotificationAlert from "./NotificationAlert.jsx";
 
 const PreviewConfigMatrix = ({ configs, mode = "import", onClose }) => {
     const [permissions, setPermissions] = useState({});
+    const [resetConfigs, setResetConfigs] = useState(false);
+    const [notificationmsg, setNotificationmsg] = useState(null);
 
     if (!configs || configs.length === 0) {
         return (
@@ -35,8 +38,8 @@ const PreviewConfigMatrix = ({ configs, mode = "import", onClose }) => {
             const service = await configService();
 
             if (mode === "import") {
-                const res = await service.saveConfig({ databaseConfigs: configs });
-                console.log(res.data);
+                const res = await service.saveConfig(resetConfigs, { databaseConfigs: configs });
+                setNotificationmsg(res.data);
             } else if (mode === "export") {
                 const xmlContent = generateXML(configs);
 
@@ -135,6 +138,13 @@ const PreviewConfigMatrix = ({ configs, mode = "import", onClose }) => {
                 </table>
             </div>
 
+            {mode === "import" && (
+                <div className={"preview-import-options"}>
+                    <input type={"checkbox"}  checked={resetConfigs}  onChange={(e) => setResetConfigs(e.target.checked)}  />
+                    <label className={"preview-reset-checkbox"}>Import with full config reset</label>
+                </div>
+            )}
+
             <div className="preview-matrix-button">
                 <button className="preview-button" onClick={handleButtonClick}>
                     {mode === "import" ? "Save Config" : "Export Config"}
@@ -147,6 +157,10 @@ const PreviewConfigMatrix = ({ configs, mode = "import", onClose }) => {
                     Close
                 </button>
             </div>
+
+            {notificationmsg !== null && (
+                <NotificationAlert type="success" message={notificationmsg} timeout={2000} />
+            )}
         </div>
     );
 };

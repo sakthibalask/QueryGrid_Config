@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { configService } from "../../app-integration/API.js";
 import NotificationAlert from "../UI/NotificationAlert.jsx";
-import CreateConfigForm from "./CreateConfigForm.jsx"; // adjust path if needed
+import CreateConfigForm from "./CreateConfigForm.jsx";
+import ConfigView from "./ConfigView.jsx"; // adjust path if needed
 
 const ConfigMatrix = () => {
     const [configs, setConfigs] = useState([]);
@@ -10,6 +11,8 @@ const ConfigMatrix = () => {
     const [groupToConfigs, setGroupToConfigs] = useState({});
     const [isDirty, setIsDirty] = useState(false);
     const [popup, setPopup] = useState(false);
+    const [configPopup, setConfigPopup] = useState(false);
+    const [selectedConfig, setSelectedConfig] = useState(null);
 
     const [notification, setNotification] = useState({
         type: "",
@@ -226,6 +229,11 @@ const ConfigMatrix = () => {
         setPopup(!popup);
     }
 
+    const handleUpdateConfig = (configName) => {
+        setSelectedConfig(configName);
+        setConfigPopup(true);
+    }
+
     return (
         <>
             {notification.message && (
@@ -292,7 +300,7 @@ const ConfigMatrix = () => {
                         </th>
                         {configs.map((config) => (
                             <th key={config} className="vertical-header-cell">
-                                <div className="vertical-header">{config}</div>
+                                <div className="vertical-header" onClick={()=> handleUpdateConfig(config)}>{config}</div>
                             </th>
                         ))}
                     </tr>
@@ -330,7 +338,32 @@ const ConfigMatrix = () => {
 
                     {/* Popup container */}
                     <section className="form-popup-area">
-                        <CreateConfigForm onClose={() => setPopup(false)} />
+                        <CreateConfigForm onClose={() =>
+                            {
+                                setPopup(false);
+                                fetchData();
+                            }
+                        } />
+                    </section>
+                </>
+            )}
+
+            {configPopup && (
+                <>
+                    {/* Dimmed background overlay */}
+                    <div
+                        className="popup-overlay"
+                        onClick={() => setConfigPopup(false)} // optional: close if clicking outside
+                    ></div>
+
+                    {/* Popup container */}
+                    <section className="form-popup-area">
+                       <ConfigView configName={selectedConfig} onClose={() =>
+                           {
+                               setConfigPopup(false);
+                               fetchData();
+                           }
+                       }/>
                     </section>
                 </>
             )}

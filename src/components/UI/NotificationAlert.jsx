@@ -38,3 +38,11 @@ const NotificationAlert = ({ type, message, timeout }) => {
 };
 
 export default NotificationAlert;
+
+
+// Usage :
+//  <NotificationAlert
+//        type=<info,success, warning, error>
+//         message=<String>
+//         timeout=<integers (ms)>
+//   />

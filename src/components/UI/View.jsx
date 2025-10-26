@@ -3,6 +3,9 @@ import { configService } from "../../app-integration/API.js";
 import "../../assets/css/View.css";
 import PreviewForm from "./PreviewForm.jsx";
 import LicenseKeyInfo from "./LicenseKeyInfo.jsx";
+import NotificationAlert from "./NotificationAlert.jsx";
+import AddUsers from "./AddUsers.jsx";
+import EditFormView from "./EditFormView.jsx";
 
 const View = ({ purpose }) => {
     const [data, setData] = useState([]);
@@ -12,12 +15,17 @@ const View = ({ purpose }) => {
     const [selected, setSelected] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [popupContent, setPopupContent] = useState(null);
+    const [notificationmsg, setNotificationmsg] = useState(null);
+    const [existingUsers, setExistingUsers] = useState(null);
+    const [selectedGroup, setSelectedGroup] = useState("");
+    const [adduserpopup, setAdduserpopup] = useState(false);
+    const [updatePopup, setUpdatePopup] = useState(false);
     const itemsPerPage = 4;
 
     const headers =
         purpose === "users"
             ? ["Email", "Username", "Repository", "Role", "Active", "Licensed", "License Key"]
-            : ["Group Name", "Description", "Group Role", "User Emails"];
+            : ["Group Name", "Description", "Group Role", "User Emails", "Add User"];
 
     // ✅ Fetch reusable function
     const fetchData = async () => {
@@ -62,22 +70,57 @@ const View = ({ purpose }) => {
     const goPrev = () => setCurrentPage((p) => Math.max(p - 1, 1));
     const goNext = () => setCurrentPage((p) => Math.min(p + 1, totalPages));
 
-    const toggleSelect = (id) =>
+    // ✅ FIXED: Unique key per purpose (email for users, group_name for groups)
+    const getRowKey = (item) => (purpose === "users" ? item.email : item.group_name);
+
+    // ✅ FIXED: Select toggle uses correct identifier
+    const toggleSelect = (key) =>
         setSelected((prev) =>
-            prev.includes(id) ? prev.filter((sid) => sid !== id) : [...prev, id]
+            prev.includes(key) ? prev.filter((e) => e !== key) : [...prev, key]
         );
 
+    // ✅ FIXED: Select all works correctly per purpose
     const handleSelectAll = () => {
         if (selected.length === paginatedData.length) {
             setSelected([]);
         } else {
-            setSelected(paginatedData.map((_, idx) => idx));
+            setSelected(paginatedData.map((item) => getRowKey(item)));
         }
     };
 
-    // ✅ Handle Delete (mock demo)
+    // ✅ Modified: Log selected user emails when deleting
     const handleDelete = async () => {
-
+        const service = await configService();
+        if (purpose === "users" && selected.length >= 1) {
+            for (let i = 0; i < selected.length; i++) {
+                await service.deleteUser(selected[i]);
+            }
+            setNotificationmsg(
+                selected.length > 1
+                    ? "Selected users are deleted successfully."
+                    : `User ${selected[0]} deleted successfully.`
+            );
+            setSelected([]);
+            setTimeout(() => {
+                fetchData();
+            }, 2010);
+        } else if (purpose === "groups" && selected.length >= 1) {
+            // need to implement
+            for(let i = 0; i < selected.length; i++) {
+                await service.deleteGroup(selected[i]);
+            }
+            setNotificationmsg(
+                selected.length > 1
+                ? "Selected groups are deleted successfully."
+                    : `Group ${selected[0]} deleted successfully.`
+            )
+            setSelected([]);
+            setTimeout(() => {
+                fetchData();
+            }, 2010);
+        } else {
+            window.alert("Select any item to delete");
+        }
     };
 
     // ✅ Handle Update (demo)
@@ -86,7 +129,7 @@ const View = ({ purpose }) => {
             console.log("Please select only one item to update.");
             return;
         }
-        console.log(`Edit popup for ${purpose === "users" ? "user" : "group"} coming soon.`);
+        setUpdatePopup(true);
     };
 
     // ✅ Handle License Key Popup dynamically
@@ -123,6 +166,11 @@ const View = ({ purpose }) => {
         }
     };
 
+    const handleAddUserClick = (userlist, groupName) => {
+        setSelectedGroup(groupName);
+        setExistingUsers(userlist);
+        setAdduserpopup(true);
+    }
 
     return (
         <>
@@ -167,16 +215,18 @@ const View = ({ purpose }) => {
                             {/* ✅ Show Update & Delete only when items selected */}
                             {selected.length > 0 && (
                                 <>
-                                    <button
-                                        className="view-button update-btn"
-                                        onClick={handleUpdate}
-                                    >
-                                        <i className="ri-edit-line"></i>
-                                        <span>Update</span>
-                                    </button>
+                                    {selected.length === 1 && (
+                                        <button
+                                            className="view-button update-btn"
+                                            onClick={handleUpdate}
+                                        >
+                                            <i className="ri-edit-line"></i>
+                                            <span>Update</span>
+                                        </button>
+                                    )}
                                     <button
                                         className="view-button delete-btn"
-                                        onClick={handleDelete}
+                                        onClick={(e) => handleDelete(e)}
                                     >
                                         <i className="ri-delete-bin-6-line"></i>
                                         <span>Delete</span>
@@ -226,53 +276,72 @@ const View = ({ purpose }) => {
                                 </tr>
                                 </thead>
                                 <tbody>
-                                {paginatedData.map((item, idx) => (
-                                    <tr
-                                        key={idx}
-                                        className={selected.includes(idx) ? "selected" : ""}
-                                        onClick={() => toggleSelect(idx)}
-                                    >
-                                        <td>
-                                            <div className="view-checkbox">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={selected.includes(idx)}
-                                                    readOnly
-                                                />
-                                                <span className="checkmark"></span>
-                                            </div>
-                                        </td>
+                                {paginatedData.map((item) => {
+                                    const key = getRowKey(item);
+                                    return (
+                                        <tr
+                                            key={key}
+                                            className={selected.includes(key) ? "selected" : ""}
+                                            onClick={() => toggleSelect(key)}
+                                        >
+                                            <td>
+                                                <div className="view-checkbox">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={selected.includes(key)}
+                                                        readOnly
+                                                    />
+                                                    <span className="checkmark"></span>
+                                                </div>
+                                            </td>
 
-                                        {purpose === "users" ? (
-                                            <>
-                                                <td>{item.email}</td>
-                                                <td>{item.username}</td>
-                                                <td>{item.repositoryName}</td>
-                                                <td>{item.role}</td>
-                                                <td>{item.active ? "Yes" : "No"}</td>
-                                                <td>{item.licensed ? "Yes" : "No"}</td>
-                                                <td>
-                                                    <button
-                                                        className="view-button update-btn small-btn"
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            handleLicenseKeyClick(item);
-                                                        }}
-                                                    >
-                                                        <i className="ri-key-fill"></i>
-                                                    </button>
-                                                </td>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <td>{item.group_name}</td>
-                                                <td>{item.description}</td>
-                                                <td>{item.groupRole}</td>
-                                                <td>{item.user_emails?.join(", ")}</td>
-                                            </>
-                                        )}
-                                    </tr>
-                                ))}
+                                            {purpose === "users" ? (
+                                                <>
+                                                    <td>{item.email}</td>
+                                                    <td>{item.username}</td>
+                                                    <td>{item.repositoryName}</td>
+                                                    <td>{item.role}</td>
+                                                    <td>{item.active ? "Yes" : "No"}</td>
+                                                    <td>{item.licensed ? "Yes" : "No"}</td>
+                                                    <td>
+                                                        <button
+                                                            className="view-button update-btn small-btn"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleLicenseKeyClick(item);
+                                                            }}
+                                                        >
+                                                            <i className="ri-key-fill"></i>
+                                                        </button>
+                                                    </td>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <td>{item.group_name}</td>
+                                                    <td>{item.description}</td>
+                                                    <td>{item.groupRole}</td>
+                                                    {item?.user_emails?.length > 0 ? (
+                                                        <td>{item.user_emails?.join(", ")}</td>
+                                                    ):(
+                                                        <td>No users added</td>
+                                                    )}
+
+                                                    <td>
+                                                        <button
+                                                            className="view-button small-btn"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleAddUserClick(item?.user_emails, item.group_name);
+                                                            }}
+                                                        >
+                                                            <i className="ri-user-add-line"></i>
+                                                        </button>
+                                                    </td>
+                                                </>
+                                            )}
+                                        </tr>
+                                    );
+                                })}
                                 {!paginatedData.length && (
                                     <tr>
                                         <td colSpan={headers.length + 1} style={{ textAlign: "center" }}>
@@ -321,6 +390,37 @@ const View = ({ purpose }) => {
                     <div className="popup-overlay" onClick={() => setPopupContent(null)}></div>
                     <section className="preview-form-popup-area">{popupContent}</section>
                 </>
+            )}
+
+
+            {(adduserpopup && purpose === "groups") && (
+                <>
+                    <div className="popup-overlay" onClick={() => setAdduserpopup(false)}></div>
+                    <section className="preview-form-popup-area">
+                        <AddUsers existingUsers={existingUsers} groupName={selectedGroup} onClose={() => {
+                            setAdduserpopup(false);
+                            fetchData();
+                        }}/>
+                    </section>
+                </>
+            )}
+
+            {updatePopup && (
+                <>
+                    <div className="popup-overlay" onClick={() => setUpdatePopup(false)}></div>
+                    <section className="preview-form-popup-area">
+                        <EditFormView purpose={purpose} primaryKey={selected[0]} onClose={() => {
+                            fetchData();
+                            setUpdatePopup(false);
+                        }} />
+                    </section>
+
+
+                </>
+            )}
+
+            {notificationmsg !== null && (
+                <NotificationAlert type={"success"} message={notificationmsg} timeout={2000} />
             )}
         </>
     );

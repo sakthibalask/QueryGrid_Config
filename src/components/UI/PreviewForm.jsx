@@ -177,23 +177,23 @@ const PreviewForm = ({ purpose, action, mode, userEmail, onSuccess }) => {
                                 />
                             </div>
                             <div className="create-view-input_box">
-                                <label htmlFor="username">Username</label>
-                                <input
-                                    type="text"
-                                    id="username"
-                                    placeholder="Enter username"
-                                    value={formData.username || ""}
-                                    onChange={handleChange}
-                                    required
-                                />
-                            </div>
-                            <div className="create-view-input_box">
                                 <label htmlFor="repositoryName">Repository</label>
                                 <input
                                     type="text"
                                     id="repositoryName"
                                     placeholder="Enter repository name"
                                     value={formData.repositoryName || ""}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
+                            <div className="create-view-input_box">
+                                <label htmlFor="username">Username</label>
+                                <input
+                                    type="text"
+                                    id="username"
+                                    placeholder="Enter username"
+                                    value={formData.username || ""}
                                     onChange={handleChange}
                                     required
                                 />

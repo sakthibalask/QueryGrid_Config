@@ -115,12 +115,12 @@ const LicenseKeyInfo = ({ userEmail }) => {
                         >
                             {copied ? "Copied!" : "Copy License"}
                         </button>
-                        <button
-                            className="license-details-info-delete-btn"
-                            onClick={handleDelete}
-                        >
-                            Delete License
-                        </button>
+                        {/*<button*/}
+                        {/*    className="license-details-info-delete-btn"*/}
+                        {/*    onClick={handleDelete}*/}
+                        {/*>*/}
+                        {/*    Delete License*/}
+                        {/*</button>*/}
                     </div>
                 </div>
             ) : (
